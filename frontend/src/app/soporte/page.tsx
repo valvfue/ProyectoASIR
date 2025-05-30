@@ -44,7 +44,7 @@ export default function SoportePage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Tu nombre"
+            placeholder="Tu usuario"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             required
