@@ -15,6 +15,10 @@ export class UserService {
     return this.userRepository.findOne({ where: { username } });
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
+  }
+
   async findById(id: number): Promise<User | null> {
     return this.userRepository.findOne({ where: { id } });
   }
@@ -24,5 +28,6 @@ export class UserService {
     return this.userRepository.save(newUser);
   }
 }
+
 
 

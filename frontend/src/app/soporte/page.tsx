@@ -5,8 +5,6 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import { enviarTicketSoporte } from '../services/api';
 
 export default function SoportePage() {
-  const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState('');
   const [asunto, setAsunto] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [enviado, setEnviado] = useState(false);
@@ -14,16 +12,23 @@ export default function SoportePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const name = typeof window !== 'undefined' ? localStorage.getItem('username') || '' : '';
+    const email = typeof window !== 'undefined' ? localStorage.getItem('email') || '' : '';
+
+    if (!name || !email) {
+      setError('No se pudo obtener el usuario autenticado. Vuelve a iniciar sesión.');
+      return;
+    }
+
     try {
       await enviarTicketSoporte({
-        name: nombre,
-        email: correo,
+        name,
+        email,
         subject: asunto,
         message: mensaje,
       });
       setEnviado(true);
-      setNombre('');
-      setCorreo('');
       setAsunto('');
       setMensaje('');
       setError('');
@@ -42,22 +47,6 @@ export default function SoportePage() {
         {error && <p className="text-red-600 mb-4">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Tu usuario"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-            className="w-full border p-2"
-          />
-          <input
-            type="email"
-            placeholder="Tu correo"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-            required
-            className="w-full border p-2"
-          />
           <input
             type="text"
             placeholder="Asunto"
@@ -84,6 +73,9 @@ export default function SoportePage() {
     </ProtectedRoute>
   );
 }
+
+
+
 
 
 

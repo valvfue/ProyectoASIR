@@ -23,10 +23,10 @@ export class AuthController {
 
   @Post('login')
   async login(
-    @Body() body: { username: string; password: string },
+    @Body() body: { email: string; password: string },
     @Req() req: Request,
   ) {
-    const { username, password } = body;
+    const { email, password } = body;
 
     const ipAddress =
       req.headers['x-forwarded-for']?.toString().split(',')[0] ||
@@ -35,7 +35,7 @@ export class AuthController {
 
     const userAgent = req.headers['user-agent'] || 'Desconocido';
 
-    return this.authService.login(username, password, ipAddress, userAgent);
+    return this.authService.login(email, password, ipAddress, userAgent);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -50,6 +50,8 @@ export class AuthController {
     return this.authService.clearSessionLogs();
   }
 }
+
+
 
 
 

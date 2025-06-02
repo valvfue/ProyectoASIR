@@ -25,12 +25,12 @@ export class AuthService {
   }
 
   async login(
-    username: string,
+    email: string,
     password: string,
     ipAddress: string,
     userAgent: string,
   ) {
-    const user = await this.userService.findByUsername(username);
+    const user = await this.userService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Usuario no encontrado');
     }
@@ -51,7 +51,11 @@ export class AuthService {
       loginAt: new Date(),
     });
 
-    return { access_token: token };
+    return {
+      access_token: token,
+      username: user.username,
+      email: user.email, // Para usarlo en el frontend si lo necesitas
+    };
   }
 
   async getAllSessionLogs(): Promise<SessionLog[]> {
@@ -65,6 +69,8 @@ export class AuthService {
     return { message: 'Todos los registros de sesión han sido eliminados' };
   }
 }
+
+
 
 
 

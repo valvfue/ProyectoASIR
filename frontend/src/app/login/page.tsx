@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -15,14 +15,14 @@ export default function LoginPage() {
     const res = await fetch('http://192.168.1.70:3001/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username: email, password }), // ⬅️ email como username
     });
 
     if (res.ok) {
       const data = await res.json();
       localStorage.setItem('token', data.access_token);
-      localStorage.setItem('username', username); // <-- Guardamos el usuario
-      window.dispatchEvent(new Event('storage')); // <-- NOTIFICAMOS CAMBIO
+      localStorage.setItem('username', data.username); // ⬅️ Guardamos username, no email
+      window.dispatchEvent(new Event('storage')); // ⬅️ Forzamos actualización del Navbar
       router.push('/dashboard');
     } else {
       setError('Credenciales incorrectas');
@@ -34,11 +34,12 @@ export default function LoginPage() {
       <h2 className="text-2xl font-bold mb-6">Iniciar sesión</h2>
       <form onSubmit={handleLogin} className="space-y-4">
         <input
-          type="text"
-          placeholder="Usuario"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          placeholder="Correo electrónico"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full border border-gray-300 rounded px-3 py-2"
+          required
         />
         <input
           type="password"
@@ -46,6 +47,7 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border border-gray-300 rounded px-3 py-2"
+          required
         />
         {error && <p className="text-red-500">{error}</p>}
         <button
@@ -58,5 +60,8 @@ export default function LoginPage() {
     </main>
   );
 }
+
+
+
 
 
