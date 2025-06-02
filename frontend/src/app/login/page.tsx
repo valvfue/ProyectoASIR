@@ -15,14 +15,18 @@ export default function LoginPage() {
     const res = await fetch('http://192.168.1.70:3001/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: email, password }), // ⬅️ email como username
+      body: JSON.stringify({ username: email, password }), // el backend usa email como username
     });
 
     if (res.ok) {
       const data = await res.json();
+
+      // ✅ Guardamos tanto el username como el email
       localStorage.setItem('token', data.access_token);
-      localStorage.setItem('username', data.username); // ⬅️ Guardamos username, no email
-      window.dispatchEvent(new Event('storage')); // ⬅️ Forzamos actualización del Navbar
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('email', email); // necesario para los tickets de Zendesk
+
+      window.dispatchEvent(new Event('storage'));
       router.push('/dashboard');
     } else {
       setError('Credenciales incorrectas');
@@ -60,6 +64,7 @@ export default function LoginPage() {
     </main>
   );
 }
+
 
 
 

@@ -26,6 +26,7 @@ export async function enviarTicketSoporte(datos: {
   email: string;
   subject: string;
   message: string;
+  department: string; // ✅ Añadido aquí
 }) {
   const res = await fetch(`${BACKEND_URL}zendesk/tickets`, {
     method: "POST",
@@ -41,6 +42,7 @@ export async function enviarTicketSoporte(datos: {
 
   return res.json();
 }
+
 
 
 
