@@ -13,6 +13,14 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({ nullable: true, type: 'text' })
+  twoFactorSecret: string | null; // ✅ ahora acepta null
+
+  @Column({ default: false })
+  isTwoFactorEnabled: boolean;
 }
+
+
 
 

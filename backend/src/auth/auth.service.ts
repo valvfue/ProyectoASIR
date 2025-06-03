@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -6,6 +6,7 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SessionLog } from './entities/session-log.entity';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +30,7 @@ export class AuthService {
     password: string,
     ipAddress: string,
     userAgent: string,
+    code?: string, // Código TOTP opcional
   ) {
     const user = await this.userService.findByEmail(email);
     if (!user) {
@@ -38,6 +40,22 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Contraseña incorrecta');
+    }
+
+    // Validar 2FA si está activado
+    if (user.isTwoFactorEnabled) {
+      if (!code) {
+        throw new BadRequestException('Código 2FA requerido');
+      }
+
+      const isCodeValid = authenticator.verify({
+        token: code,
+        secret: user.twoFactorSecret!,
+      });
+
+      if (!isCodeValid) {
+        throw new BadRequestException('Código 2FA inválido');
+      }
     }
 
     const payload = { sub: user.id, username: user.username };
@@ -54,7 +72,7 @@ export class AuthService {
     return {
       access_token: token,
       username: user.username,
-      email: user.email, // Para usarlo en el frontend si lo necesitas
+      email: user.email,
     };
   }
 
@@ -68,7 +86,14 @@ export class AuthService {
     await this.sessionLogRepository.clear();
     return { message: 'Todos los registros de sesión han sido eliminados' };
   }
+
+  async get2FAStatus(userId: number) {
+  const user = await this.userService.findById(userId);
+  return { enabled: user?.isTwoFactorEnabled || false };
+  }
+
 }
+
 
 
 

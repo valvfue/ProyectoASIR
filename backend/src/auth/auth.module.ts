@@ -7,7 +7,8 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UserModule } from '../user/user.module';
 import { SessionLog } from './entities/session-log.entity';
-import { JwtAuthGuard } from './jwt-auth.guard'; // 🔐 Importar el guardia
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { TwoFactorAuthService } from './two-factor-auth.service'; // ✅ Añadir esto
 
 @Module({
   imports: [
@@ -23,10 +24,12 @@ import { JwtAuthGuard } from './jwt-auth.guard'; // 🔐 Importar el guardia
   providers: [
     AuthService,
     JwtStrategy,
-    JwtAuthGuard, // 🔐 Registrar el guardia
+    JwtAuthGuard,
+    TwoFactorAuthService, // ✅ Registrar el servicio aquí
   ],
 })
 export class AuthModule {}
+
 
 
 

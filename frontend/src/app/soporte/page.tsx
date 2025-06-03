@@ -72,8 +72,8 @@ export default function SoportePage() {
             className="w-full border p-2"
           >
             <option value="">Selecciona un departamento</option>
-            <option value="logística">Logística</option>
-            <option value="dirección">Dirección</option>
+            <option value="logistica">Logística</option>
+            <option value="direccion">Dirección</option>
             <option value="it">IT</option>
             <option value="calidad">Calidad</option>
             <option value="comercial">Comercial</option>

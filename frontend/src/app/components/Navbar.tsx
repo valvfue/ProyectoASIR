@@ -39,6 +39,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('email');
     setUsername(null);
     router.push('/login');
   };
@@ -98,20 +99,18 @@ export default function Navbar() {
                 <ShieldAlert className="h-5 w-5" />
                 <span>Auditoría</span>
               </Link>
+              <Link href="/profile" className="flex items-center space-x-1 hover:text-gray-200">
+                <User className="h-5 w-5" />
+                <span>Perfil</span>
+              </Link>
             </>
           )}
 
           {username ? (
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center space-x-1 text-white">
-                <User className="h-5 w-5" />
-                <span>{username}</span>
-              </span>
-              <button onClick={handleLogout} className="flex items-center space-x-1 hover:text-gray-200">
-                <LogOut className="h-5 w-5" />
-                <span>Salir</span>
-              </button>
-            </div>
+            <button onClick={handleLogout} className="flex items-center space-x-1 hover:text-gray-200">
+              <LogOut className="h-5 w-5" />
+              <span>Salir</span>
+            </button>
           ) : (
             <Link href="/login" className="flex items-center space-x-1 hover:text-gray-200">
               <LogIn className="h-5 w-5" />
@@ -157,20 +156,18 @@ export default function Navbar() {
                 <ShieldAlert className="h-5 w-5" />
                 <span>Auditoría</span>
               </Link>
+              <Link href="/perfil" className="flex items-center space-x-2 hover:text-gray-200" onClick={() => setIsOpen(false)}>
+                <User className="h-5 w-5" />
+                <span>Perfil</span>
+              </Link>
             </>
           )}
 
           {username ? (
-            <div className="flex items-center justify-between mt-2">
-              <span className="flex items-center space-x-1 text-white">
-                <User className="h-5 w-5" />
-                <span>{username}</span>
-              </span>
-              <button onClick={handleLogout} className="flex items-center space-x-1 hover:text-gray-200">
-                <LogOut className="h-5 w-5" />
-                <span>Salir</span>
-              </button>
-            </div>
+            <button onClick={handleLogout} className="flex items-center space-x-1 hover:text-gray-200">
+              <LogOut className="h-5 w-5" />
+              <span>Salir</span>
+            </button>
           ) : (
             <Link href="/login" className="flex items-center space-x-2 hover:text-gray-200">
               <LogIn className="h-5 w-5" />
@@ -182,6 +179,7 @@ export default function Navbar() {
     </nav>
   );
 }
+
 
 
 
