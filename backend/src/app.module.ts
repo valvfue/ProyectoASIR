@@ -7,8 +7,8 @@ import { ZabbixModule } from './zabbix/zabbix.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SessionLog } from './auth/entities/session-log.entity';
-import { ZendeskModule } from './zendesk/zendesk.module'; // ✅ Módulo de Zendesk
-import { UserController } from './user/user.controller'; // 👈 añade esto
+import { ZendeskModule } from './zendesk/zendesk.module'; 
+import { UserController } from './user/user.controller'; 
 
 
 @Module({
@@ -27,7 +27,7 @@ import { UserController } from './user/user.controller'; // 👈 añade esto
     UserModule,
     AuthModule,
     ZabbixModule,
-    ZendeskModule, // ✅ Añadido
+    ZendeskModule, 
   ],
   controllers: [AppController],
   providers: [AppService],
