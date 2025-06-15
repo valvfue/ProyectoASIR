@@ -47,7 +47,7 @@ export default function LoginPage() {
 
       /* Notifica al resto de pestañas y redirige */
       window.dispatchEvent(new Event('storage'));
-      router.push('/dashboard');
+      router.push('/');
       return;
     }
 

@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { Trash2, PlusCircle, Loader2 } from 'lucide-react';
 
-/* -------- Helpers -------- */
+/* --- Helpers --- */
 function getTokenData() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (!token) return null;
   try {
     const [, payload] = token.split('.');
@@ -18,7 +18,8 @@ function getTokenData() {
   }
 }
 
-const API_BASE = typeof window !== 'undefined' ? `${window.location.origin}` : '';
+const API_BASE =
+  typeof window !== 'undefined' ? window.location.origin : '';
 
 type User = {
   id: number;
@@ -33,20 +34,27 @@ export default function UsuariosPage() {
   const isAdmin = tokenData?.role === 'admin';
 
   const [users, setUsers] = useState<User[]>([]);
-  const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+  });
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
 
+  /* Redirección si no es admin */
   useEffect(() => {
-    if (!isAdmin) router.replace('/');
+    if (!isAdmin) router.replace('/unauthorized');
   }, [isAdmin, router]);
 
+  /* Obtener usuarios */
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/user`, {
         headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
       });
       if (res.ok) {
         const data: User[] = await res.json();
@@ -63,6 +71,7 @@ export default function UsuariosPage() {
     if (isAdmin) fetchUsers();
   }, [isAdmin]);
 
+  /* Crear usuario */
   const createUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMsg('');
@@ -89,13 +98,16 @@ export default function UsuariosPage() {
     }
   };
 
+  /* Borrar usuario */
   const deleteUser = async (id: number) => {
     if (!confirm('¿Eliminar usuario?')) return;
 
     try {
       const res = await fetch(`${API_BASE}/user/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
 
       if (res.ok) fetchUsers();
@@ -105,6 +117,7 @@ export default function UsuariosPage() {
     }
   };
 
+  /* Si no es admin, no renderiza */
   if (!isAdmin) return null;
 
   return (
@@ -156,14 +169,19 @@ export default function UsuariosPage() {
             <PlusCircle className="w-5 h-5" /> Crear nuevo usuario
           </h3>
 
-          <form onSubmit={createUser} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <form
+            onSubmit={createUser}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          >
             {(['username', 'email', 'password'] as const).map((f) => (
               <input
                 key={f}
                 type={f === 'password' ? 'password' : 'text'}
                 placeholder={f}
                 value={form[f]}
-                onChange={(e) => setForm({ ...form, [f]: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, [f]: e.target.value })
+                }
                 className="border p-2 rounded"
                 required
               />
@@ -179,5 +197,6 @@ export default function UsuariosPage() {
     </ProtectedRoute>
   );
 }
+
 
 

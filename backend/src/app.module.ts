@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './user/user.entity';
-import { ZabbixModule } from './zabbix/zabbix.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SessionLog } from './auth/entities/session-log.entity';
@@ -26,7 +25,6 @@ import { UserController } from './user/user.controller';
     TypeOrmModule.forFeature([User, SessionLog]),
     UserModule,
     AuthModule,
-    ZabbixModule,
     ZendeskModule, 
   ],
   controllers: [AppController],

@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShieldAlert, Trash2 } from 'lucide-react';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 /* ---------- Helpers ---------- */
 const API_BASE =
-  typeof window !== 'undefined' ? `${window.location.origin}` : ''; // https://victoralvarez.ddns.net
+  typeof window !== 'undefined' ? window.location.origin : '';
 
 interface SessionLog {
   id: number;
@@ -16,48 +17,73 @@ interface SessionLog {
   userAgent: string;
 }
 
-function parseUserAgent(agent: string): string {
-  let os = /Windows NT 10/.test(agent)
-    ? 'Windows 10'
-    : /Windows NT 11/.test(agent)
-    ? 'Windows 11'
-    : /Mac OS X/.test(agent)
-    ? 'macOS'
-    : /Android/.test(agent)
-    ? 'Android'
-    : /iPhone|iPad/.test(agent)
-    ? 'iOS'
-    : /Linux/.test(agent)
-    ? 'Linux'
-    : 'Desconocido';
+function getTokenPayload() {
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  if (!token) return null;
+  try {
+    const [, payload] = token.split('.');
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+}
 
-  let browser = /Edg\//.test(agent)
-    ? 'Edge'
-    : /Chrome\/\d+/.test(agent) && !/Edg\//.test(agent)
-    ? 'Chrome'
-    : /Firefox\/\d+/.test(agent)
-    ? 'Firefox'
-    : /Safari\/\d+/.test(agent) && !/Chrome/.test(agent)
-    ? 'Safari'
-    : 'Desconocido';
+function parseUserAgent(agent: string): string {
+  /* SO */
+  const os =
+    /Windows NT 10/.test(agent)
+      ? 'Windows 10'
+      : /Windows NT 11/.test(agent)
+      ? 'Windows 11'
+      : /Mac OS X/.test(agent)
+      ? 'macOS'
+      : /Android/.test(agent)
+      ? 'Android'
+      : /iPhone|iPad/.test(agent)
+      ? 'iOS'
+      : /Linux/.test(agent)
+      ? 'Linux'
+      : 'Desconocido';
+
+  /* Navegador */
+  const browser =
+    /Edg\//.test(agent)
+      ? 'Edge'
+      : /Chrome\/\d+/.test(agent) && !/Edg\//.test(agent)
+      ? 'Chrome'
+      : /Firefox\/\d+/.test(agent)
+      ? 'Firefox'
+      : /Safari\/\d+/.test(agent) && !/Chrome/.test(agent)
+      ? 'Safari'
+      : 'Desconocido';
 
   return `${os} + ${browser}`;
 }
 
 export default function AuditPage() {
+  const router = useRouter();
+  const role = getTokenPayload()?.role;
+
+  /* --- Solo admin; si no, redirige --- */
+  if (role !== 'admin') {
+    router.replace('/unauthorized');
+    return null;
+  }
+
+  /* --- Estado --- */
   const [logs, setLogs] = useState<SessionLog[]>([]);
   const [loading, setLoading] = useState(false);
 
+  /* --- GET auditoría --- */
   const fetchAuditLogs = async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/auth/audit`, {
         headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
       });
-      if (res.ok) {
-        const data: SessionLog[] = await res.json();
-        setLogs(data);
-      }
+      if (res.ok) setLogs(await res.json());
     } catch (err) {
       console.error('Error al obtener auditoría:', err);
     }
@@ -67,8 +93,14 @@ export default function AuditPage() {
     fetchAuditLogs();
   }, []);
 
+  /* --- DELETE auditoría --- */
   const handleClearLogs = async () => {
-    if (!window.confirm('¿Estás seguro de que deseas borrar todos los registros?')) return;
+    if (
+      !window.confirm(
+        '¿Estás seguro de que deseas borrar todos los registros?',
+      )
+    )
+      return;
 
     setLoading(true);
     try {
@@ -77,15 +109,14 @@ export default function AuditPage() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-
       if (res.ok) await fetchAuditLogs();
-      else console.error('No se pudo borrar la auditoría.');
     } catch (err) {
       console.error('Error al borrar auditoría:', err);
     }
     setLoading(false);
   };
 
+  /* ---------- UI ---------- */
   return (
     <ProtectedRoute>
       <main>
@@ -105,7 +136,9 @@ export default function AuditPage() {
         <div className="bg-white p-6 rounded-xl shadow-md">
           <div className="flex items-center space-x-3 mb-4">
             <ShieldAlert className="w-6 h-6 text-red-600" />
-            <h3 className="text-xl font-semibold">Historial de inicios de sesión</h3>
+            <h3 className="text-xl font-semibold">
+              Historial de inicios de sesión
+            </h3>
           </div>
 
           <table className="w-full table-auto text-left border-t">
@@ -125,20 +158,25 @@ export default function AuditPage() {
                   <td className="py-2 px-3">
                     {new Date(log.loginAt).toLocaleString('es-ES')}
                   </td>
-                  <td className="py-2 px-3">{parseUserAgent(log.userAgent)}</td>
+                  <td className="py-2 px-3">
+                    {parseUserAgent(log.userAgent)}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           {logs.length === 0 && (
-            <p className="mt-4 text-gray-500">No hay registros disponibles.</p>
+            <p className="mt-4 text-gray-500">
+              No hay registros disponibles.
+            </p>
           )}
         </div>
       </main>
     </ProtectedRoute>
   );
 }
+
 
 
 

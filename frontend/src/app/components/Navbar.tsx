@@ -5,20 +5,19 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Home,
-  Server,
-  ServerCog,
-  Menu,
   User,
-  LogOut,
   LogIn,
-  ShieldAlert,
+  LogOut,
   LifeBuoy,
-  LayoutDashboard,
+  ShieldAlert,
+  ServerCog,
   Users,
+  Menu,
 } from 'lucide-react';
 
-/* ---------- Helpers ---------- */
-function decodeJWT(token?: string | null) {
+function getTokenPayload() {
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (!token) return null;
   try {
     const [, payload] = token.split('.');
@@ -29,94 +28,149 @@ function decodeJWT(token?: string | null) {
 }
 
 export default function Navbar() {
-  const [isOpen, setIsOpen]   = useState(false);
-  const [username, setUser]   = useState<string | null>(null);
-  const [role, setRole]       = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const router = useRouter();
 
-  /* -------- Cargar usuario desde localStorage -------- */
+  /* ---- Cargar datos de token ---- */
   useEffect(() => {
     const load = () => {
-      const token = localStorage.getItem('token');
-      const payload = decodeJWT(token);
-      setUser(payload?.username ?? null);
-      setRole(payload?.role ?? null);
+      const payload = getTokenPayload();
+      setUsername(payload?.username || null);
+      setRole(payload?.role || null);
     };
+
     load();
     window.addEventListener('storage', load);
     return () => window.removeEventListener('storage', load);
   }, []);
 
-  /* -------- Logout -------- */
+  /* ---- Logout ---- */
   const handleLogout = () => {
-    localStorage.clear();                // 💥  Vacía todo
-    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('email');
+    localStorage.removeItem('role');
+    setUsername(null);
     setRole(null);
-    router.replace('/login');            // navega
-    router.refresh();                    // fuerza recarga de la página
+    router.push('/login');
   };
 
-  /* -------- UI -------- */
+  /* ---- Helpers UI ---- */
+  const LinkBtn = ({
+    href,
+    icon: Icon,
+    label,
+  }: {
+    href: string;
+    icon: any;
+    label: string;
+  }) => (
+    <Link
+      href={href}
+      className="flex items-center space-x-1 hover:text-gray-200"
+      onClick={() => setIsOpen(false)}
+    >
+      <Icon className="h-5 w-5" />
+      <span>{label}</span>
+    </Link>
+  );
+
   return (
     <nav className="bg-blue-700 text-white px-4 py-3 shadow-md">
       <div className="flex items-center justify-between">
+        {/* Logo / título ------------------------------------------------ */}
         <div className="text-lg font-bold">
           <Link href="/">
-            <span>
-              Proyecto <br /> ASIR
-            </span>
+            Proyecto <br /> ASIR
           </Link>
         </div>
 
-        {/* Botón hamburguesa */}
+        {/* Botón hamburguesa móvil ------------------------------------ */}
         <button
+          className="sm:hidden text-white"
           onClick={() => setIsOpen(!isOpen)}
-          className="sm:hidden text-white focus:outline-none"
         >
           <Menu className="h-6 w-6" />
         </button>
 
-        {/* -------- Menú escritorio -------- */}
+        {/* ----------- Menú escritorio ----------- */}
         <div className="hidden sm:flex items-center space-x-6">
-          {!username && (
-            <Link href="/" className="flex items-center space-x-1 hover:text-gray-200">
-              <Home className="h-5 w-5" />
-              <span>Inicio</span>
-            </Link>
-          )}
+          {!username && <LinkBtn href="/" icon={Home} label="Inicio" />}
 
           {username && (
             <>
-              <Link href="/dashboard" className="flex items-center space-x-1 hover:text-gray-200">
-                <LayoutDashboard className="h-5 w-5" />
-                <span>Panel</span>
-              </Link>
-              <Link href="/backend" className="flex items-center space-x-1 hover:text-gray-200">
-                <Server className="h-5 w-5" />
-                <span>Backend</span>
-              </Link>
-              <Link href="/zabbix" className="flex items-center space-x-1 hover:text-gray-200">
-                <ServerCog className="h-5 w-5" />
-                <span>Zabbix</span>
-              </Link>
-              <Link href="/soporte" className="flex items-center space-x-1 hover:text-gray-200">
-                <LifeBuoy className="h-5 w-5" />
-                <span>Soporte</span>
-              </Link>
-              <Link href="/audit" className="flex items-center space-x-1 hover:text-gray-200">
-                <ShieldAlert className="h-5 w-5" />
-                <span>Auditoría</span>
-              </Link>
-              <Link href="/profile" className="flex items-center space-x-1 hover:text-gray-200">
-                <User className="h-5 w-5" />
-                <span>Perfil</span>
-              </Link>
+              {/* Botones visibles a todos los logueados */}
+              <LinkBtn href="/soporte" icon={LifeBuoy} label="Soporte" />
+              <LinkBtn href="/profile" icon={User} label="Perfil" />
+
+              {/* Botones solo admin */}
+              {role === 'admin' && (
+                <>
+                  <LinkBtn
+                    href="http://85.208.51.169:8080/index.php"
+                    icon={ServerCog}
+                    label="Zabbix"
+                  />
+                  <LinkBtn
+                    href="/audit"
+                    icon={ShieldAlert}
+                    label="Auditoría"
+                  />
+                  <LinkBtn
+                    href="/usuarios"
+                    icon={Users}
+                    label="Usuarios"
+                  />
+                </>
+              )}
+            </>
+          )}
+
+          {/* Login / Logout */}
+          {username ? (
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-1 hover:text-gray-200"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Salir</span>
+            </button>
+          ) : (
+            <LinkBtn href="/login" icon={LogIn} label="Iniciar sesión" />
+          )}
+        </div>
+      </div>
+
+      {/* ----------- Menú móvil ----------- */}
+      {isOpen && (
+        <div className="sm:hidden mt-4 space-y-3 bg-blue-600 px-4 py-3 rounded-md">
+          {!username && <LinkBtn href="/" icon={Home} label="Inicio" />}
+
+          {username && (
+            <>
+              <LinkBtn href="/soporte" icon={LifeBuoy} label="Soporte" />
+              <LinkBtn href="/profile" icon={User} label="Perfil" />
 
               {role === 'admin' && (
-                <Link href="/usuarios" className="flex items-center space-x-1 hover:text-gray-200">
-                  <Users className="h-5 w-5" />
-                  <span>Usuarios</span>
-                </Link>
+                <>
+                  <LinkBtn
+                    href="http://85.208.51.169:8080/index.php"
+                    icon={ServerCog}
+                    label="Zabbix"
+                  />
+                  <LinkBtn
+                    href="/audit"
+                    icon={ShieldAlert}
+                    label="Auditoría"
+                  />
+                  <LinkBtn
+                    href="/usuarios"
+                    icon={Users}
+                    label="Usuarios"
+                  />
+                </>
               )}
             </>
           )}
@@ -130,34 +184,14 @@ export default function Navbar() {
               <span>Salir</span>
             </button>
           ) : (
-            <Link href="/login" className="flex items-center space-x-1 hover:text-gray-200">
-              <LogIn className="h-5 w-5" />
-              <span>Iniciar sesión</span>
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* -------- Menú móvil -------- */}
-      {isOpen && (
-        <div className="sm:hidden mt-4 space-y-3 bg-blue-600 px-4 py-3 rounded-md">
-          {/* …(el bloque móvil es idéntico al de escritorio, omito por brevedad)… */}
-          {username ? (
-            <button onClick={handleLogout} className="flex items-center space-x-2 hover:text-gray-200">
-              <LogOut className="h-5 w-5" />
-              <span>Salir</span>
-            </button>
-          ) : (
-            <Link href="/login" className="flex items-center space-x-2 hover:text-gray-200">
-              <LogIn className="h-5 w-5" />
-              <span>Iniciar sesión</span>
-            </Link>
+            <LinkBtn href="/login" icon={LogIn} label="Iniciar sesión" />
           )}
         </div>
       )}
     </nav>
   );
 }
+
 
 
 
