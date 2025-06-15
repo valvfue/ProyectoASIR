@@ -5,11 +5,11 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 @Injectable()
 export class ZendeskService {
   async createTicket(dto: CreateTicketDto): Promise<any> {
-    const { name, email, subject, message, department } = dto;
+    const { name, email, subject, message } = dto;
 
     try {
       const response = await axios.post(
-        'https://iescuravalera.zendesk.com/api/v2/requests.json',
+        'https://victoralvarez.zendesk.com/api/v2/requests.json',
         {
           request: {
             requester: {
@@ -20,18 +20,13 @@ export class ZendeskService {
             comment: {
               body: message,
             },
-            custom_fields: [
-              {
-                id: 20330974771356,      // ID del campo personalizado Departamento
-                value: department,       // Valor enviado desde el frontend (tag como 'logística', 'it', etc.)
-              },
-            ],
+            
           },
         },
         {
           auth: {
-            username: 'support@iescuravalera.zendesk.com/token',
-            password: 'NoWZJAzPGnTiAA3PqNNObuRL8rX6gfzn6Bmy77tO',
+            username: 'support@victoralvarez.zendesk.com/token',
+            password: 'qM1oKCJ7iwz9n15sNmuTbjQI58b25w5nsx1I2V5j',
           },
           headers: {
             'Content-Type': 'application/json',
@@ -46,5 +41,6 @@ export class ZendeskService {
     }
   }
 }
+
 
 

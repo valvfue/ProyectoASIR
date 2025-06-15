@@ -3,6 +3,5 @@ export class CreateTicketDto {
   email: string;
   subject: string;
   message: string;
-  department: string;
 }
 

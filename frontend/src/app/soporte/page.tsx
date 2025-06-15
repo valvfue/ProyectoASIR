@@ -7,7 +7,6 @@ import { enviarTicketSoporte } from '../services/api';
 export default function SoportePage() {
   const [asunto, setAsunto] = useState('');
   const [mensaje, setMensaje] = useState('');
-  const [departamento, setDepartamento] = useState('');
   const [enviado, setEnviado] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,12 +27,10 @@ export default function SoportePage() {
         email,
         subject: asunto,
         message: mensaje,
-        department: departamento, // 👈 nuevo campo
       });
       setEnviado(true);
       setAsunto('');
       setMensaje('');
-      setDepartamento('');
       setError('');
     } catch (err) {
       console.error(err);
@@ -46,7 +43,9 @@ export default function SoportePage() {
       <div className="p-6 max-w-xl mx-auto">
         <h1 className="text-2xl font-bold mb-4">Enviar solicitud de soporte</h1>
 
-        {enviado && <p className="text-green-600 mb-4">¡Ticket enviado correctamente!</p>}
+        {enviado && (
+          <p className="text-green-600 mb-4">¡Ticket enviado correctamente!</p>
+        )}
         {error && <p className="text-red-600 mb-4">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -65,19 +64,6 @@ export default function SoportePage() {
             required
             className="w-full border p-2"
           />
-          <select
-            value={departamento}
-            onChange={(e) => setDepartamento(e.target.value)}
-            required
-            className="w-full border p-2"
-          >
-            <option value="">Selecciona un departamento</option>
-            <option value="logistica">Logística</option>
-            <option value="direccion">Dirección</option>
-            <option value="it">IT</option>
-            <option value="calidad">Calidad</option>
-            <option value="comercial">Comercial</option>
-          </select>
           <button
             type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -89,6 +75,7 @@ export default function SoportePage() {
     </ProtectedRoute>
   );
 }
+
 
 
 
