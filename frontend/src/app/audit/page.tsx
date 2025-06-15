@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { ShieldAlert, Trash2 } from 'lucide-react';
 import ProtectedRoute from '../components/ProtectedRoute';
 
+/* ---------- Helpers ---------- */
+const API_BASE =
+  typeof window !== 'undefined' ? `${window.location.origin}` : ''; // https://victoralvarez.ddns.net
+
 interface SessionLog {
   id: number;
   username: string;
@@ -12,22 +16,30 @@ interface SessionLog {
   userAgent: string;
 }
 
-// 👉 Función para simplificar el userAgent
 function parseUserAgent(agent: string): string {
-  let os = 'Desconocido';
-  let browser = 'Desconocido';
+  let os = /Windows NT 10/.test(agent)
+    ? 'Windows 10'
+    : /Windows NT 11/.test(agent)
+    ? 'Windows 11'
+    : /Mac OS X/.test(agent)
+    ? 'macOS'
+    : /Android/.test(agent)
+    ? 'Android'
+    : /iPhone|iPad/.test(agent)
+    ? 'iOS'
+    : /Linux/.test(agent)
+    ? 'Linux'
+    : 'Desconocido';
 
-  if (/Windows NT 10.0/.test(agent)) os = 'Windows 10';
-  else if (/Windows NT 11.0/.test(agent)) os = 'Windows 11';
-  else if (/Mac OS X/.test(agent)) os = 'macOS';
-  else if (/Android/.test(agent)) os = 'Android';
-  else if (/iPhone|iPad/.test(agent)) os = 'iOS';
-  else if (/Linux/.test(agent)) os = 'Linux';
-
-  if (/Chrome\/\d+/.test(agent) && !/Edge|Edg\//.test(agent)) browser = 'Chrome';
-  else if (/Firefox\/\d+/.test(agent)) browser = 'Firefox';
-  else if (/Safari\/\d+/.test(agent) && !/Chrome/.test(agent)) browser = 'Safari';
-  else if (/Edg\/\d+/.test(agent)) browser = 'Edge';
+  let browser = /Edg\//.test(agent)
+    ? 'Edge'
+    : /Chrome\/\d+/.test(agent) && !/Edg\//.test(agent)
+    ? 'Chrome'
+    : /Firefox\/\d+/.test(agent)
+    ? 'Firefox'
+    : /Safari\/\d+/.test(agent) && !/Chrome/.test(agent)
+    ? 'Safari'
+    : 'Desconocido';
 
   return `${os} + ${browser}`;
 }
@@ -39,13 +51,13 @@ export default function AuditPage() {
   const fetchAuditLogs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://85.208.51.169:3001/auth/audit', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch(`${API_BASE}/auth/audit`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      setLogs(data);
+      if (res.ok) {
+        const data: SessionLog[] = await res.json();
+        setLogs(data);
+      }
     } catch (err) {
       console.error('Error al obtener auditoría:', err);
     }
@@ -56,30 +68,21 @@ export default function AuditPage() {
   }, []);
 
   const handleClearLogs = async () => {
-    const confirmed = window.confirm('¿Estás seguro de que deseas borrar todos los registros?');
-    if (!confirmed) return;
+    if (!window.confirm('¿Estás seguro de que deseas borrar todos los registros?')) return;
 
     setLoading(true);
-
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://85.208.51.169:3001/auth/audit', {
+      const res = await fetch(`${API_BASE}/auth/audit`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (res.ok) {
-        console.log('Registros eliminados.');
-        await fetchAuditLogs(); // refrescar la tabla
-      } else {
-        console.error('No se pudo borrar la auditoría.');
-      }
+      if (res.ok) await fetchAuditLogs();
+      else console.error('No se pudo borrar la auditoría.');
     } catch (err) {
       console.error('Error al borrar auditoría:', err);
     }
-
     setLoading(false);
   };
 
@@ -88,13 +91,14 @@ export default function AuditPage() {
       <main>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Auditoría de Sesiones</h2>
+
           <button
             onClick={handleClearLogs}
             className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition disabled:opacity-50"
             disabled={loading}
           >
             <Trash2 className="w-5 h-5 mr-2" />
-            {loading ? 'Eliminando...' : 'Borrar registros'}
+            {loading ? 'Eliminando…' : 'Borrar registros'}
           </button>
         </div>
 
@@ -104,13 +108,13 @@ export default function AuditPage() {
             <h3 className="text-xl font-semibold">Historial de inicios de sesión</h3>
           </div>
 
-          <table className="w-full table-auto text-left mt-4 border-t">
+          <table className="w-full table-auto text-left border-t">
             <thead>
               <tr className="text-gray-700 border-b">
                 <th className="py-2 px-3">Usuario</th>
                 <th className="py-2 px-3">IP</th>
                 <th className="py-2 px-3">Fecha y hora</th>
-                <th className="py-2 px-3">Sistema Operativo / Navegador</th>
+                <th className="py-2 px-3">SO / Navegador</th>
               </tr>
             </thead>
             <tbody>
@@ -135,6 +139,8 @@ export default function AuditPage() {
     </ProtectedRoute>
   );
 }
+
+
 
 
 

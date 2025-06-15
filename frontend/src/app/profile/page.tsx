@@ -1,10 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../components/ProtectedRoute';
 import axios from 'axios';
 
+function getTokenPayload() {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    const [, payload] = token.split('.');
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+}
+
 export default function PerfilPage() {
+  const router = useRouter();
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
 
@@ -21,47 +35,53 @@ export default function PerfilPage() {
   const [message2FA, setMessage2FA] = useState('');
 
   useEffect(() => {
-    const savedUsername = localStorage.getItem('username') || '';
-    const savedEmail = localStorage.getItem('email') || '';
-    setUsername(savedUsername);
-    setEmail(savedEmail);
+    const load = () => {
+      const payload = getTokenPayload();
+      if (!payload) {
+        router.replace('/login');
+        return;
+      }
+      setUsername(payload.username);
+      setEmail(localStorage.getItem('email') || '');
+      check2FAStatus();
+    };
 
-    check2FAStatus();
-  }, []);
+    load();
+    window.addEventListener('storage', load);
+    return () => window.removeEventListener('storage', load);
+  }, [router]);
 
   const check2FAStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get<{ enabled: boolean }>(
-        'http://85.208.51.169:3001/auth/2fa/status',
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const { data } = await axios.get<{ enabled: boolean }>(
+        'https://victoralvarez.ddns.net/auth/2fa/status',
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      setIs2FAEnabled(res.data.enabled);
+      setIs2FAEnabled(data.enabled);
     } catch {
       setMessage2FA('Error al comprobar el estado del 2FA');
     }
   };
 
-  const handleEmailUpdate = async (e: React.FormEvent) => {
+  const handleEmailUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setEmailMsg('');
     try {
-      const res = await fetch('http://85.208.51.169:3001/user/email', {
+      const res = await fetch('https://victoralvarez.ddns.net/user/email', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ userId: 0, newEmail }),
+        body: JSON.stringify({ newEmail }),
       });
 
       if (res.ok) {
         localStorage.setItem('email', newEmail);
         setEmail(newEmail);
-        setEmailMsg('Correo actualizado correctamente.');
         setNewEmail('');
+        setEmailMsg('Correo actualizado correctamente.');
       } else {
         const data = await res.json();
         setEmailMsg(data.message || 'Error al actualizar el correo.');
@@ -71,18 +91,17 @@ export default function PerfilPage() {
     }
   };
 
-  const handlePasswordUpdate = async (e: React.FormEvent) => {
+  const handlePasswordUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPasswordMsg('');
     try {
-      const res = await fetch('http://85.208.51.169:3001/user/password', {
+      const res = await fetch('https://victoralvarez.ddns.net/user/password', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          userId: 0,
           currentPassword,
           newPassword,
         }),
@@ -105,11 +124,11 @@ export default function PerfilPage() {
     setMessage2FA('');
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get<{ qrCodeDataUrl: string }>(
-        'http://85.208.51.169:3001/auth/2fa/generate',
-        { headers: { Authorization: `Bearer ${token}` } }
+      const { data } = await axios.get<{ qrCodeDataUrl: string }>(
+        'https://victoralvarez.ddns.net/auth/2fa/generate',
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      setQrCodeUrl(res.data.qrCodeDataUrl);
+      setQrCodeUrl(data.qrCodeDataUrl);
     } catch {
       setMessage2FA('Error al generar el código QR');
     }
@@ -120,16 +139,16 @@ export default function PerfilPage() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://85.208.51.169:3001/auth/2fa/enable',
+        'https://victoralvarez.ddns.net/auth/2fa/enable',
         { code },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setIs2FAEnabled(true);
       setQrCodeUrl('');
       setCode('');
       setMessage2FA('2FA activado correctamente');
-    } catch (error: any) {
-      setMessage2FA(error.response?.data?.message || 'Error al activar el 2FA');
+    } catch (err: any) {
+      setMessage2FA(err.response?.data?.message || 'Error al activar el 2FA');
     }
   };
 
@@ -138,16 +157,16 @@ export default function PerfilPage() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://85.208.51.169:3001/auth/2fa/disable',
+        'https://victoralvarez.ddns.net/auth/2fa/disable',
         { code },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setIs2FAEnabled(false);
       setQrCodeUrl('');
       setCode('');
       setMessage2FA('2FA desactivado correctamente');
-    } catch (error: any) {
-      setMessage2FA(error.response?.data?.message || 'Error al desactivar el 2FA');
+    } catch (err: any) {
+      setMessage2FA(err.response?.data?.message || 'Error al desactivar el 2FA');
     }
   };
 
@@ -203,7 +222,6 @@ export default function PerfilPage() {
 
         <div className="space-y-3">
           <h3 className="text-lg font-semibold">Autenticación en dos factores (2FA)</h3>
-
           {is2FAEnabled ? (
             <div>
               <p className="text-green-700 font-semibold">✅ 2FA está activado</p>
@@ -214,7 +232,10 @@ export default function PerfilPage() {
                 onChange={(e) => setCode(e.target.value)}
                 className="w-full border p-2 mt-2"
               />
-              <button onClick={disable2FA} className="bg-red-600 text-white px-4 py-2 rounded mt-2">
+              <button
+                onClick={disable2FA}
+                className="bg-red-600 text-white px-4 py-2 rounded mt-2"
+              >
                 Desactivar 2FA
               </button>
             </div>
@@ -248,13 +269,17 @@ export default function PerfilPage() {
               )}
             </div>
           )}
-
           {message2FA && <p className="text-sm text-gray-600">{message2FA}</p>}
         </div>
       </div>
     </ProtectedRoute>
   );
 }
+
+
+
+
+
 
 
 

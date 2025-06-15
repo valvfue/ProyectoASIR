@@ -3,12 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+/* =========================================================
+   Utiliza la misma origin (https://victoralvarez.ddns.net)
+   y pasa siempre por Nginx → /api/auth/login
+   ========================================================= */
+const API_BASE = `${typeof window !== 'undefined' ? window.location.origin : ''}`;
+
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  /* ------------------ State ------------------ */
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [code, setCode] = useState('');
-  const [show2FA, setShow2FA] = useState(false);
-  const [error, setError] = useState('');
+  const [code,     setCode]     = useState('');
+  const [show2FA,  setShow2FA]  = useState(false);
+  const [error,    setError]    = useState('');
   const router = useRouter();
 
   /* ------------------ Login ------------------ */
@@ -16,14 +23,14 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    /* Siempre enviamos “email”; el backend acepta email o username */
+    /* El backend acepta email o username en el campo “email” */
     const payload: Record<string, string> = {
-      email: email.trim(),          // ← campo correcto
+      email: email.trim(),
       password,
     };
     if (show2FA) payload.code = code;
 
-    const res = await fetch('http://85.208.51.169:3001/auth/login', {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -32,10 +39,13 @@ export default function LoginPage() {
     if (res.ok) {
       const data = await res.json();
 
-      localStorage.setItem('token', data.access_token);
+      /* Guarda datos en localStorage */
+      localStorage.setItem('token',    data.access_token);
       localStorage.setItem('username', data.username);
-      localStorage.setItem('email', data.email);
+      localStorage.setItem('email',    data.email);
+      localStorage.setItem('role',     data.role);
 
+      /* Notifica al resto de pestañas y redirige */
       window.dispatchEvent(new Event('storage'));
       router.push('/dashboard');
       return;
@@ -56,6 +66,7 @@ export default function LoginPage() {
     }
   };
 
+  /* ------------------ UI ------------------ */
   return (
     <main className="max-w-md mx-auto mt-20 bg-white p-8 rounded shadow">
       <h2 className="text-2xl font-bold mb-6">Iniciar sesión</h2>
@@ -102,6 +113,8 @@ export default function LoginPage() {
     </main>
   );
 }
+
+
 
 
 

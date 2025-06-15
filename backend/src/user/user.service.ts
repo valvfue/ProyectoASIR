@@ -17,10 +17,9 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  /* ───────────── BÚSQUEDAS ───────────── */
   async findAll(): Promise<User[]> {
     return this.userRepository.find({
-      select: ['id', 'username', 'email', 'role'], // no devolver el hash
+      select: ['id', 'username', 'email', 'role'],
       order: { id: 'ASC' },
     });
   }
@@ -37,7 +36,6 @@ export class UserService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  /* ───────────── CREAR ───────────── */
   async create(dto: CreateUserDto): Promise<User> {
     if (await this.findByUsername(dto.username))
       throw new ConflictException('Nombre de usuario ya existe');
@@ -54,15 +52,18 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  /* ───────────── ELIMINAR ───────────── */
   async remove(id: number) {
     const res = await this.userRepository.delete(id);
     if (!res.affected) throw new NotFoundException('Usuario no encontrado');
     return { message: 'Usuario eliminado' };
   }
 
-  /* ───────────── ACTUALIZAR CORREO ───────────── */
   async updateEmail(id: number, newEmail: string): Promise<User> {
+    const existingUser = await this.findByEmail(newEmail);
+    if (existingUser && existingUser.id !== id) {
+      throw new ConflictException('El correo electrónico ya está en uso');
+    }
+
     const user = await this.findById(id);
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
@@ -70,7 +71,6 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  /* ───────────── ACTUALIZAR CONTRASEÑA ───────────── */
   async updatePassword(
     id: number,
     currentPassword: string,
@@ -87,7 +87,6 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  /* ───────────── ACTUALIZAR 2FA ───────────── */
   async update2FA(
     id: number,
     data: Partial<Pick<User, 'twoFactorSecret' | 'isTwoFactorEnabled'>>,

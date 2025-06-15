@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { Trash2, PlusCircle, Loader2 } from 'lucide-react';
 
+/* -------- Helpers -------- */
 function getTokenData() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (!token) return null;
@@ -17,9 +18,14 @@ function getTokenData() {
   }
 }
 
-type User = { id: number; username: string; email: string; role: string };
+const API_BASE = typeof window !== 'undefined' ? `${window.location.origin}` : '';
 
-const API_BASE = 'http://85.208.51.169:3001';
+type User = {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+};
 
 export default function UsuariosPage() {
   const router = useRouter();
@@ -31,19 +37,23 @@ export default function UsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
 
-  /* Redirige si no es admin */
   useEffect(() => {
     if (!isAdmin) router.replace('/');
   }, [isAdmin, router]);
 
-  /* Carga usuarios */
   const fetchUsers = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/user`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) setUsers(await res.json());
+      if (res.ok) {
+        const data: User[] = await res.json();
+        setUsers(data);
+      }
+    } catch (err) {
+      console.error('Error al obtener usuarios:', err);
     } finally {
       setLoading(false);
     }
@@ -53,36 +63,46 @@ export default function UsuariosPage() {
     if (isAdmin) fetchUsers();
   }, [isAdmin]);
 
-  /* Crear */
-  const createUser = async (e: React.FormEvent) => {
+  const createUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMsg('');
-    const res = await fetch(`${API_BASE}/user`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      setMsg('✅ Usuario creado');
-      setForm({ username: '', email: '', password: '' });
-      fetchUsers();
-    } else {
-      const data = await res.json();
-      setMsg(data.message || 'Error');
+    try {
+      const res = await fetch(`${API_BASE}/user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        setMsg('✅ Usuario creado');
+        setForm({ username: '', email: '', password: '' });
+        fetchUsers();
+      } else {
+        const data = await res.json();
+        setMsg(data.message || 'Error al crear usuario');
+      }
+    } catch {
+      setMsg('Error de red al crear usuario');
     }
   };
 
-  /* Borrar */
   const deleteUser = async (id: number) => {
     if (!confirm('¿Eliminar usuario?')) return;
-    await fetch(`${API_BASE}/user/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-    });
-    fetchUsers();
+
+    try {
+      const res = await fetch(`${API_BASE}/user/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+
+      if (res.ok) fetchUsers();
+      else console.error('Error al eliminar');
+    } catch (err) {
+      console.error('Error al eliminar usuario:', err);
+    }
   };
 
   if (!isAdmin) return null;
@@ -92,7 +112,7 @@ export default function UsuariosPage() {
       <main className="max-w-4xl mx-auto mt-8 space-y-8">
         <h2 className="text-3xl font-bold">Gestión de usuarios</h2>
 
-        {/* Tabla */}
+        {/* Tabla usuarios */}
         {loading ? (
           <Loader2 className="animate-spin" />
         ) : (
@@ -130,7 +150,7 @@ export default function UsuariosPage() {
           </table>
         )}
 
-        {/* Formulario crear */}
+        {/* Crear usuario */}
         <div className="bg-white shadow p-6 rounded-lg">
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <PlusCircle className="w-5 h-5" /> Crear nuevo usuario
@@ -142,7 +162,7 @@ export default function UsuariosPage() {
                 key={f}
                 type={f === 'password' ? 'password' : 'text'}
                 placeholder={f}
-                value={(form as any)[f]}
+                value={form[f]}
                 onChange={(e) => setForm({ ...form, [f]: e.target.value })}
                 className="border p-2 rounded"
                 required
@@ -159,4 +179,5 @@ export default function UsuariosPage() {
     </ProtectedRoute>
   );
 }
+
 

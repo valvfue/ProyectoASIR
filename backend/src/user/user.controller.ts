@@ -21,7 +21,6 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  /* ------- LISTAR (solo admin) ------- */
   @UseGuards(JwtAuthGuard)
   @Roles('admin')
   @Get()
@@ -29,7 +28,6 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  /* ------- CREAR (solo admin) ------- */
   @UseGuards(JwtAuthGuard)
   @Roles('admin')
   @Post()
@@ -37,7 +35,6 @@ export class UserController {
     return this.userService.create(dto);
   }
 
-  /* ------- ELIMINAR (solo admin) ------- */
   @UseGuards(JwtAuthGuard)
   @Roles('admin')
   @Delete(':id')
@@ -45,7 +42,6 @@ export class UserController {
     return this.userService.remove(id);
   }
 
-  /* ------- Cambiar correo / contraseña (usuario logueado) ------- */
   @UseGuards(JwtAuthGuard)
   @Patch('email')
   updateEmail(@Body() dto: UpdateEmailDto, @Request() req: any) {
