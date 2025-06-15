@@ -42,11 +42,11 @@ export default function ZabbixPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const versionRes = await fetch('http://192.168.1.70:3001/zabbix/version');
+      const versionRes = await fetch('http://85.208.51.169:3001/zabbix/version');
       const versionData = await versionRes.json();
       setZabbixVersion(versionData.version);
 
-      const hostsRes = await fetch('http://192.168.1.70:3001/zabbix/hosts');
+      const hostsRes = await fetch('http://85.208.51.169:3001/zabbix/hosts');
       const hostsData = await hostsRes.json();
       setHosts(hostsData.hosts);
 
@@ -54,7 +54,7 @@ export default function ZabbixPage() {
       if (active) {
         setActiveHostId(active.hostid);
 
-        const metricsRes = await fetch(`http://192.168.1.70:3001/zabbix/metrics?hostid=${active.hostid}`);
+        const metricsRes = await fetch(`http://85.208.51.169:3001/zabbix/metrics?hostid=${active.hostid}`);
         const metricsData = await metricsRes.json();
         setMetrics(metricsData.metrics);
       }

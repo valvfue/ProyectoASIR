@@ -1,5 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+export type UserRole = 'admin' | 'user';
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -15,11 +17,15 @@ export class User {
   password: string;
 
   @Column({ nullable: true, type: 'text' })
-  twoFactorSecret: string | null; // ✅ ahora acepta null
+  twoFactorSecret: string | null;
 
   @Column({ default: false })
   isTwoFactorEnabled: boolean;
+
+  @Column({ type: 'varchar', default: 'user' })
+  role: UserRole;
 }
+
 
 
 

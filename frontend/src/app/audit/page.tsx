@@ -39,7 +39,7 @@ export default function AuditPage() {
   const fetchAuditLogs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://192.168.1.70:3001/auth/audit', {
+      const res = await fetch('http://85.208.51.169:3001/auth/audit', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -63,7 +63,7 @@ export default function AuditPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://192.168.1.70:3001/auth/audit', {
+      const res = await fetch('http://85.208.51.169:3001/auth/audit', {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,

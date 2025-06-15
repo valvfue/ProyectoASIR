@@ -26,14 +26,14 @@ export default function PerfilPage() {
     setUsername(savedUsername);
     setEmail(savedEmail);
 
-    check2FAStatus(); // 👈 Consulta el estado al cargar
+    check2FAStatus();
   }, []);
 
   const check2FAStatus = async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get<{ enabled: boolean }>(
-        'http://192.168.1.70:3001/auth/2fa/status',
+        'http://85.208.51.169:3001/auth/2fa/status',
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -48,7 +48,7 @@ export default function PerfilPage() {
     e.preventDefault();
     setEmailMsg('');
     try {
-      const res = await fetch('http://192.168.1.70:3001/user/email', {
+      const res = await fetch('http://85.208.51.169:3001/user/email', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export default function PerfilPage() {
     e.preventDefault();
     setPasswordMsg('');
     try {
-      const res = await fetch('http://192.168.1.70:3001/user/password', {
+      const res = await fetch('http://85.208.51.169:3001/user/password', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ export default function PerfilPage() {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get<{ qrCodeDataUrl: string }>(
-        'http://192.168.1.70:3001/auth/2fa/generate',
+        'http://85.208.51.169:3001/auth/2fa/generate',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setQrCodeUrl(res.data.qrCodeDataUrl);
@@ -120,7 +120,7 @@ export default function PerfilPage() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://192.168.1.70:3001/auth/2fa/enable',
+        'http://85.208.51.169:3001/auth/2fa/enable',
         { code },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -138,7 +138,7 @@ export default function PerfilPage() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://192.168.1.70:3001/auth/2fa/disable',
+        'http://85.208.51.169:3001/auth/2fa/disable',
         { code },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -161,7 +161,6 @@ export default function PerfilPage() {
           <p><strong>Correo electrónico:</strong> {email}</p>
         </div>
 
-        {/* Email */}
         <form onSubmit={handleEmailUpdate} className="space-y-3">
           <h3 className="text-lg font-semibold">Actualizar correo</h3>
           <input
@@ -178,7 +177,6 @@ export default function PerfilPage() {
           {emailMsg && <p className="text-sm text-gray-600">{emailMsg}</p>}
         </form>
 
-        {/* Contraseña */}
         <form onSubmit={handlePasswordUpdate} className="space-y-3">
           <h3 className="text-lg font-semibold">Actualizar contraseña</h3>
           <input
@@ -203,7 +201,6 @@ export default function PerfilPage() {
           {passwordMsg && <p className="text-sm text-gray-600">{passwordMsg}</p>}
         </form>
 
-        {/* 2FA */}
         <div className="space-y-3">
           <h3 className="text-lg font-semibold">Autenticación en dos factores (2FA)</h3>
 
@@ -258,6 +255,7 @@ export default function PerfilPage() {
     </ProtectedRoute>
   );
 }
+
 
 
 

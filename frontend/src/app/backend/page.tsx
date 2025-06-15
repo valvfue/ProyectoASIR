@@ -15,7 +15,7 @@ export default function BackendPage() {
     useEffect(() => {
         const fetchStatus = async () => {
             try {
-                const res = await fetch('http://192.168.1.70:3001/');
+                const res = await fetch('http://85.208.51.169:3001/');
                 const data = await res.json();
                 setBackendStatus(data);
             } catch (error) {

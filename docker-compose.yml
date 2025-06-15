@@ -7,6 +7,7 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+    restart: unless-stopped
     networks:
       - proyecto-red
 
@@ -16,15 +17,14 @@ services:
       - "3001:3000"
     depends_on:
       - mariadb_auth
+    restart: unless-stopped
     networks:
       - proyecto-red
-    env_file:
-      - ./backend/.env
 
   mariadb_auth:
     image: mariadb:10.5
     container_name: mariadb_auth
-    restart: always
+    restart: always            
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: usuarios_db
@@ -40,6 +40,7 @@ services:
   zabbix-mariadb:
     image: mariadb:10.5
     container_name: zabbix-mariadb
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: zabbix
@@ -53,6 +54,7 @@ services:
   zabbix-server:
     image: zabbix/zabbix-server-mysql:alpine-latest
     container_name: zabbix-server
+    restart: unless-stopped
     environment:
       DB_SERVER_HOST: zabbix-mariadb
       MYSQL_DATABASE: zabbix
@@ -68,6 +70,7 @@ services:
   zabbix-web:
     image: zabbix/zabbix-web-nginx-mysql:alpine-latest
     container_name: zabbix-web
+    restart: unless-stopped
     environment:
       DB_SERVER_HOST: zabbix-mariadb
       MYSQL_DATABASE: zabbix
@@ -85,6 +88,7 @@ services:
   zabbix-agent:
     image: zabbix/zabbix-agent:alpine-latest
     container_name: zabbix-agent
+    restart: unless-stopped
     depends_on:
       - zabbix-server
     environment:
@@ -100,6 +104,7 @@ volumes:
 networks:
   proyecto-red:
     driver: bridge
+
 
 
 

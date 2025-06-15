@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://192.168.1.70:3001/";
+const BACKEND_URL = "http://85.208.51.169:3001/";
 
 export async function getStatus(): Promise<string> {
   try {

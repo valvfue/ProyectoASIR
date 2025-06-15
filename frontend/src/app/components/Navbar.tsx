@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import {
   Home,
   Server,
-  Monitor,
   ServerCog,
   Menu,
   User,
@@ -14,19 +13,34 @@ import {
   LogIn,
   ShieldAlert,
   LifeBuoy,
-  LayoutDashboard
+  LayoutDashboard,
+  Users
 } from 'lucide-react';
+
+function getTokenData() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  if (!token) return null;
+  try {
+    const [, payload] = token.split('.');
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+}
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const loadUser = () => {
       const token = localStorage.getItem("token");
       const user = localStorage.getItem("username");
+      const payload = getTokenData();
       setUsername(token && user ? user : null);
+      setRole(payload?.role || null);
     };
 
     loadUser();
@@ -41,6 +55,7 @@ export default function Navbar() {
     localStorage.removeItem('username');
     localStorage.removeItem('email');
     setUsername(null);
+    setRole(null);
     router.push('/login');
   };
 
@@ -64,7 +79,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Menú de escritorio */}
+        {/* Menú escritorio */}
         <div className="hidden sm:flex items-center space-x-6">
           {!username && (
             <Link href="/" className="flex items-center space-x-1 hover:text-gray-200">
@@ -83,10 +98,6 @@ export default function Navbar() {
                 <Server className="h-5 w-5" />
                 <span>Backend</span>
               </Link>
-              <Link href="/vps" className="flex items-center space-x-1 hover:text-gray-200">
-                <Monitor className="h-5 w-5" />
-                <span>VPS</span>
-              </Link>
               <Link href="/zabbix" className="flex items-center space-x-1 hover:text-gray-200">
                 <ServerCog className="h-5 w-5" />
                 <span>Zabbix</span>
@@ -103,6 +114,12 @@ export default function Navbar() {
                 <User className="h-5 w-5" />
                 <span>Perfil</span>
               </Link>
+              {role === 'admin' && (
+                <Link href="/usuarios" className="flex items-center space-x-1 hover:text-gray-200">
+                  <Users className="h-5 w-5" />
+                  <span>Usuarios</span>
+                </Link>
+              )}
             </>
           )}
 
@@ -140,10 +157,6 @@ export default function Navbar() {
                 <Server className="h-5 w-5" />
                 <span>Backend</span>
               </Link>
-              <Link href="/vps" className="flex items-center space-x-2 hover:text-gray-200" onClick={() => setIsOpen(false)}>
-                <Monitor className="h-5 w-5" />
-                <span>VPS</span>
-              </Link>
               <Link href="/zabbix" className="flex items-center space-x-2 hover:text-gray-200" onClick={() => setIsOpen(false)}>
                 <ServerCog className="h-5 w-5" />
                 <span>Zabbix</span>
@@ -156,15 +169,21 @@ export default function Navbar() {
                 <ShieldAlert className="h-5 w-5" />
                 <span>Auditoría</span>
               </Link>
-              <Link href="/perfil" className="flex items-center space-x-2 hover:text-gray-200" onClick={() => setIsOpen(false)}>
+              <Link href="/profile" className="flex items-center space-x-2 hover:text-gray-200" onClick={() => setIsOpen(false)}>
                 <User className="h-5 w-5" />
                 <span>Perfil</span>
               </Link>
+              {role === 'admin' && (
+                <Link href="/usuarios" className="flex items-center space-x-2 hover:text-gray-200" onClick={() => setIsOpen(false)}>
+                  <Users className="h-5 w-5" />
+                  <span>Usuarios</span>
+                </Link>
+              )}
             </>
           )}
 
           {username ? (
-            <button onClick={handleLogout} className="flex items-center space-x-1 hover:text-gray-200">
+            <button onClick={handleLogout} className="flex items-center space-x-2 hover:text-gray-200">
               <LogOut className="h-5 w-5" />
               <span>Salir</span>
             </button>
@@ -179,6 +198,8 @@ export default function Navbar() {
     </nav>
   );
 }
+
+
 
 
 

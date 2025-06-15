@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -17,14 +21,17 @@ export class AuthService {
     private readonly sessionLogRepository: Repository<SessionLog>,
   ) {}
 
+  /* ─────────── Registro ─────────── */
   async register(createUserDto: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     return this.userService.create({
       ...createUserDto,
       password: hashedPassword,
+      role: 'user', // todos los nuevos son usuarios normales
     });
   }
 
+  /* ─────────── Login ─────────── */
   async login(
     email: string,
     password: string,
@@ -33,34 +40,32 @@ export class AuthService {
     code?: string, // Código TOTP opcional
   ) {
     const user = await this.userService.findByEmail(email);
-    if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
-    }
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+    if (!isPasswordValid)
       throw new UnauthorizedException('Contraseña incorrecta');
-    }
 
-    // Validar 2FA si está activado
+    /* ----- 2FA ----- */
     if (user.isTwoFactorEnabled) {
-      if (!code) {
-        throw new BadRequestException('Código 2FA requerido');
-      }
+      if (!code) throw new BadRequestException('Código 2FA requerido');
 
       const isCodeValid = authenticator.verify({
         token: code,
         secret: user.twoFactorSecret!,
       });
-
-      if (!isCodeValid) {
-        throw new BadRequestException('Código 2FA inválido');
-      }
+      if (!isCodeValid) throw new BadRequestException('Código 2FA inválido');
     }
 
-    const payload = { sub: user.id, username: user.username };
+    /* ----- JWT con role ----- */
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,          // ← IMPORTANTE
+    };
     const token = await this.jwtService.signAsync(payload);
 
+    /* ----- Registro de sesión ----- */
     await this.sessionLogRepository.save({
       userId: user.id,
       username: user.username,
@@ -69,13 +74,16 @@ export class AuthService {
       loginAt: new Date(),
     });
 
+    /* ----- Respuesta ----- */
     return {
       access_token: token,
       username: user.username,
       email: user.email,
+      role: user.role,          // ← opcional pero útil en frontend
     };
   }
 
+  /* ─────────── Auditoría de sesiones ─────────── */
   async getAllSessionLogs(): Promise<SessionLog[]> {
     return this.sessionLogRepository.find({
       order: { loginAt: 'DESC' },
@@ -87,12 +95,13 @@ export class AuthService {
     return { message: 'Todos los registros de sesión han sido eliminados' };
   }
 
+  /* ─────────── 2FA helpers ─────────── */
   async get2FAStatus(userId: number) {
-  const user = await this.userService.findById(userId);
-  return { enabled: user?.isTwoFactorEnabled || false };
+    const user = await this.userService.findById(userId);
+    return { enabled: user?.isTwoFactorEnabled || false };
   }
-
 }
+
 
 
 
