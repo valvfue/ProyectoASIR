@@ -1,30 +1,35 @@
+// Define la entidad User, que representa a los usuarios del sistema.
+// Con esto TypeORM crea la tabla automáticamente y sabe cómo mapearla.
+
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+// Solo hay dos tipos de rol posibles: 'admin' o 'user'
 export type UserRole = 'admin' | 'user';
 
-@Entity()
+@Entity() // Nest genera automáticamente una tabla llamada 'user'
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number; // ID autoincremental
 
   @Column({ unique: true })
-  username: string;
+  username: string; // Nombre de usuario (único)
 
   @Column({ unique: true })
-  email: string;
+  email: string; // Correo del usuario (también único)
 
   @Column()
-  password: string;
+  password: string; // Contraseña encriptada (hash bcrypt)
 
   @Column({ nullable: true, type: 'text' })
-  twoFactorSecret: string | null;
+  twoFactorSecret: string | null; // Secret para Google Authenticator (si tiene 2FA activado)
 
   @Column({ default: false })
-  isTwoFactorEnabled: boolean;
+  isTwoFactorEnabled: boolean; // Indica si tiene 2FA activo
 
   @Column({ type: 'varchar', default: 'user' })
-  role: UserRole;
+  role: UserRole; // Rol del usuario: 'user' por defecto, o 'admin'
 }
+
 
 
 

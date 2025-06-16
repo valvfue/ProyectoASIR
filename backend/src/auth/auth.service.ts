@@ -15,38 +15,42 @@ import { authenticator } from 'otplib';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService,
+    private readonly userService: UserService,          // CRUD de usuarios
+    private readonly jwtService: JwtService,            // Firma de tokens
     @InjectRepository(SessionLog)
-    private readonly sessionLogRepository: Repository<SessionLog>,
+    private readonly sessionLogRepository: Repository<SessionLog>, // Auditoría
   ) {}
 
-  /* ─────────── Registro ─────────── */
+  // Creo usuarios nuevos cifrando la contraseña con bcrypt.
   async register(createUserDto: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    // Todos los nuevos registros entran con rol 'user' por defecto.
     return this.userService.create({
       ...createUserDto,
       password: hashedPassword,
-      role: 'user', // todos los nuevos son usuarios normales
+      role: 'user',
     });
   }
 
-  /* ─────────── Login ─────────── */
+  // Valido user + pass (+ 2FA) y devuelvo un JWT. También registro la sesión.
   async login(
     email: string,
     password: string,
     ipAddress: string,
     userAgent: string,
-    code?: string, // Código TOTP opcional
+    code?: string, // Código TOTP si el 2FA está activado
   ) {
+    // 1) Compruebo que el usuario exista
     const user = await this.userService.findByEmail(email);
     if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
+    // 2) Verifico la contraseña en base de datos
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
-      throw new UnauthorizedException('Contraseña incorrecta');
+      throw new UnauthorizedException('Credenciales incorrectas');
 
-    /* ----- 2FA ----- */
+    // 3) Si tiene 2FA activo, valido el código TOTP
     if (user.isTwoFactorEnabled) {
       if (!code) throw new BadRequestException('Código 2FA requerido');
 
@@ -57,15 +61,14 @@ export class AuthService {
       if (!isCodeValid) throw new BadRequestException('Código 2FA inválido');
     }
 
-    /* ----- JWT con role ----- */
     const payload = {
       sub: user.id,
       username: user.username,
-      role: user.role,          // ← IMPORTANTE
+      role: user.role,
     };
     const token = await this.jwtService.signAsync(payload);
 
-    /* ----- Registro de sesión ----- */
+    // 4) Guardo la sesión en la tabla SessionLog para la auditoría
     await this.sessionLogRepository.save({
       userId: user.id,
       username: user.username,
@@ -74,33 +77,38 @@ export class AuthService {
       loginAt: new Date(),
     });
 
-    /* ----- Respuesta ----- */
+    // 5) Devuelvo el token y datos básicos del usuario
     return {
       access_token: token,
-      username: user.username,
-      email: user.email,
-      role: user.role,          // ← opcional pero útil en frontend
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
     };
   }
 
-  /* ─────────── Auditoría de sesiones ─────────── */
+  // Devuelvo todos los accesos ordenados del más reciente al más antiguo.
   async getAllSessionLogs(): Promise<SessionLog[]> {
     return this.sessionLogRepository.find({
       order: { loginAt: 'DESC' },
     });
   }
 
+  // Elimino todos los registros (solo para admins).
   async clearSessionLogs(): Promise<{ message: string }> {
     await this.sessionLogRepository.clear();
     return { message: 'Todos los registros de sesión han sido eliminados' };
   }
 
-  /* ─────────── 2FA helpers ─────────── */
+  // Devuelvo si el usuario tiene 2FA activado (lo usa el frontend para mostrar estado).
   async get2FAStatus(userId: number) {
     const user = await this.userService.findById(userId);
     return { enabled: user?.isTwoFactorEnabled || false };
   }
 }
+
 
 
 

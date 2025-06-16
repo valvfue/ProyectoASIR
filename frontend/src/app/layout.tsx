@@ -4,8 +4,8 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
-  title: "Proyecto ASIR - Dashboard",
-  description: "Proyecto final ASIR con Docker, Zabbix, Backend y Frontend",
+  title: "victoralvarez",
+  description: "Empresa de fabricación de componentes electrónicos",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

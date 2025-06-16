@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../components/ProtectedRoute';
 import axios from 'axios';
 
+/* --------- Extrae el payload del JWT --------- */
 function getTokenPayload() {
   const token = localStorage.getItem('token');
   if (!token) return null;
   try {
     const [, payload] = token.split('.');
-    return JSON.parse(atob(payload));
+    return JSON.parse(atob(payload)); // { sub, username, email, role, ... }
   } catch {
     return null;
   }
@@ -19,21 +20,26 @@ function getTokenPayload() {
 export default function PerfilPage() {
   const router = useRouter();
 
+  /* ----------------- State ----------------- */
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [email,    setEmail]    = useState('');
 
+  /* Cambiar correo */
   const [newEmail, setNewEmail] = useState('');
   const [emailMsg, setEmailMsg] = useState('');
 
+  /* Cambiar contraseña */
   const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [passwordMsg, setPasswordMsg] = useState('');
+  const [newPassword,     setNewPassword]     = useState('');
+  const [passwordMsg,     setPasswordMsg]     = useState('');
 
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const [code, setCode] = useState('');
-  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-  const [message2FA, setMessage2FA] = useState('');
+  /* 2FA */
+  const [qrCodeUrl,     setQrCodeUrl]     = useState('');
+  const [code,          setCode]          = useState('');
+  const [is2FAEnabled,  setIs2FAEnabled]  = useState(false);
+  const [message2FA,    setMessage2FA]    = useState('');
 
+  /* ------------- Cargar datos al montar ------------- */
   useEffect(() => {
     const load = () => {
       const payload = getTokenPayload();
@@ -42,15 +48,17 @@ export default function PerfilPage() {
         return;
       }
       setUsername(payload.username);
-      setEmail(localStorage.getItem('email') || '');
+      // Fallback: primero localStorage, si no existe uso payload.email
+      setEmail(localStorage.getItem('email') || payload.email || '');
       check2FAStatus();
     };
 
     load();
-    window.addEventListener('storage', load);
+    window.addEventListener('storage', load);    // Sincroniza con otras pestañas
     return () => window.removeEventListener('storage', load);
   }, [router]);
 
+  /* ------------- Comprobar estado 2FA ------------- */
   const check2FAStatus = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -64,6 +72,7 @@ export default function PerfilPage() {
     }
   };
 
+  /* ------------- Cambiar correo ------------- */
   const handleEmailUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setEmailMsg('');
@@ -91,6 +100,7 @@ export default function PerfilPage() {
     }
   };
 
+  /* ------------- Cambiar contraseña ------------- */
   const handlePasswordUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPasswordMsg('');
@@ -101,10 +111,7 @@ export default function PerfilPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
+        body: JSON.stringify({ currentPassword, newPassword }),
       });
 
       if (res.ok) {
@@ -120,6 +127,7 @@ export default function PerfilPage() {
     }
   };
 
+  /* ------------- 2FA: Generar QR ------------- */
   const generateQRCode = async () => {
     setMessage2FA('');
     try {
@@ -134,6 +142,7 @@ export default function PerfilPage() {
     }
   };
 
+  /* ------------- 2FA: Activar ------------- */
   const enable2FA = async () => {
     setMessage2FA('');
     try {
@@ -152,6 +161,7 @@ export default function PerfilPage() {
     }
   };
 
+  /* ------------- 2FA: Desactivar ------------- */
   const disable2FA = async () => {
     setMessage2FA('');
     try {
@@ -170,16 +180,19 @@ export default function PerfilPage() {
     }
   };
 
+  /* ------------- Render ------------- */
   return (
     <ProtectedRoute>
       <div className="max-w-xl mx-auto mt-10 bg-white shadow rounded p-6 space-y-6">
         <h2 className="text-2xl font-bold mb-4">Perfil de Usuario</h2>
 
+        {/* Datos básicos */}
         <div>
           <p><strong>Nombre de usuario:</strong> {username}</p>
           <p><strong>Correo electrónico:</strong> {email}</p>
         </div>
 
+        {/* Formulario: cambiar correo */}
         <form onSubmit={handleEmailUpdate} className="space-y-3">
           <h3 className="text-lg font-semibold">Actualizar correo</h3>
           <input
@@ -196,6 +209,7 @@ export default function PerfilPage() {
           {emailMsg && <p className="text-sm text-gray-600">{emailMsg}</p>}
         </form>
 
+        {/* Formulario: cambiar contraseña */}
         <form onSubmit={handlePasswordUpdate} className="space-y-3">
           <h3 className="text-lg font-semibold">Actualizar contraseña</h3>
           <input
@@ -220,9 +234,12 @@ export default function PerfilPage() {
           {passwordMsg && <p className="text-sm text-gray-600">{passwordMsg}</p>}
         </form>
 
+        {/* Gestión 2FA */}
         <div className="space-y-3">
           <h3 className="text-lg font-semibold">Autenticación en dos factores (2FA)</h3>
+
           {is2FAEnabled ? (
+            /* ---- 2FA activado ---- */
             <div>
               <p className="text-green-700 font-semibold">✅ 2FA está activado</p>
               <input
@@ -240,6 +257,7 @@ export default function PerfilPage() {
               </button>
             </div>
           ) : (
+            /* ---- 2FA desactivado ---- */
             <div>
               {!qrCodeUrl ? (
                 <button
@@ -269,12 +287,15 @@ export default function PerfilPage() {
               )}
             </div>
           )}
+
           {message2FA && <p className="text-sm text-gray-600">{message2FA}</p>}
         </div>
       </div>
     </ProtectedRoute>
   );
 }
+
+
 
 
 

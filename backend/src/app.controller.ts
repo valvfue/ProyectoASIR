@@ -7,7 +7,7 @@ export class AppController {
 
   @Get()
   getHello() {
-    return this.appService.getHello(); // Debe devolver el objeto completo
+    return this.appService.getHello();
   }
 }
 

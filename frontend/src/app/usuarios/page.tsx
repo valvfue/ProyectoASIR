@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { Trash2, PlusCircle, Loader2 } from 'lucide-react';
 
-/* --- Helpers --- */
+// Decodifica el token guardado en localStorage para extraer datos como el rol
 function getTokenData() {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -21,6 +21,7 @@ function getTokenData() {
 const API_BASE =
   typeof window !== 'undefined' ? window.location.origin : '';
 
+// Tipado de usuarios
 type User = {
   id: number;
   username: string;
@@ -31,8 +32,9 @@ type User = {
 export default function UsuariosPage() {
   const router = useRouter();
   const tokenData = getTokenData();
-  const isAdmin = tokenData?.role === 'admin';
+  const isAdmin = tokenData?.role === 'admin'; // Solo el rol admin puede acceder
 
+  // Estados: usuarios, formulario de nuevo usuario, mensajes, etc.
   const [users, setUsers] = useState<User[]>([]);
   const [form, setForm] = useState({
     username: '',
@@ -42,12 +44,12 @@ export default function UsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
 
-  /* Redirección si no es admin */
+  // Si no es admin, redirige
   useEffect(() => {
     if (!isAdmin) router.replace('/unauthorized');
   }, [isAdmin, router]);
 
-  /* Obtener usuarios */
+  // Obtiene todos los usuarios desde el backend
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -67,11 +69,12 @@ export default function UsuariosPage() {
     }
   };
 
+  // Llama a fetchUsers solo si es admin
   useEffect(() => {
     if (isAdmin) fetchUsers();
   }, [isAdmin]);
 
-  /* Crear usuario */
+  // Envía el formulario de creación de usuario
   const createUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMsg('');
@@ -98,7 +101,7 @@ export default function UsuariosPage() {
     }
   };
 
-  /* Borrar usuario */
+  // Elimina un usuario (si no es admin)
   const deleteUser = async (id: number) => {
     if (!confirm('¿Eliminar usuario?')) return;
 
@@ -117,7 +120,7 @@ export default function UsuariosPage() {
     }
   };
 
-  /* Si no es admin, no renderiza */
+  // Si no es admin, no se renderiza nada
   if (!isAdmin) return null;
 
   return (
@@ -125,7 +128,6 @@ export default function UsuariosPage() {
       <main className="max-w-4xl mx-auto mt-8 space-y-8">
         <h2 className="text-3xl font-bold">Gestión de usuarios</h2>
 
-        {/* Tabla usuarios */}
         {loading ? (
           <Loader2 className="animate-spin" />
         ) : (
@@ -163,7 +165,6 @@ export default function UsuariosPage() {
           </table>
         )}
 
-        {/* Crear usuario */}
         <div className="bg-white shadow p-6 rounded-lg">
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <PlusCircle className="w-5 h-5" /> Crear nuevo usuario
@@ -197,6 +198,7 @@ export default function UsuariosPage() {
     </ProtectedRoute>
   );
 }
+
 
 
 

@@ -5,10 +5,14 @@ import { useRouter } from 'next/navigation';
 import { ShieldAlert, Trash2 } from 'lucide-react';
 import ProtectedRoute from '../components/ProtectedRoute';
 
-/* ---------- Helpers ---------- */
-const API_BASE =
-  typeof window !== 'undefined' ? window.location.origin : '';
+/* ======================================================
+   Esta página está protegida y solo accesible para admin.
+   Muestra un historial de inicios de sesión y permite
+   eliminar todos los registros.
+   ====================================================== */
 
+const API_BASE =
+  typeof window !== 'undefined' ? window.location.origin : ''; 
 interface SessionLog {
   id: number;
   username: string;
@@ -23,14 +27,14 @@ function getTokenPayload() {
   if (!token) return null;
   try {
     const [, payload] = token.split('.');
-    return JSON.parse(atob(payload));
+    return JSON.parse(atob(payload)); 
   } catch {
     return null;
   }
 }
 
+/* ---------- Analiza el user-agent y devuelve SO + navegador ---------- */
 function parseUserAgent(agent: string): string {
-  /* SO */
   const os =
     /Windows NT 10/.test(agent)
       ? 'Windows 10'
@@ -46,7 +50,6 @@ function parseUserAgent(agent: string): string {
       ? 'Linux'
       : 'Desconocido';
 
-  /* Navegador */
   const browser =
     /Edg\//.test(agent)
       ? 'Edge'
@@ -65,23 +68,23 @@ export default function AuditPage() {
   const router = useRouter();
   const role = getTokenPayload()?.role;
 
-  /* --- Solo admin; si no, redirige --- */
+  /* ---------- Solo accesible para usuarios con rol admin ---------- */
   if (role !== 'admin') {
     router.replace('/unauthorized');
     return null;
   }
 
-  /* --- Estado --- */
+  /* ---------- Estado local ---------- */
   const [logs, setLogs] = useState<SessionLog[]>([]);
   const [loading, setLoading] = useState(false);
 
-  /* --- GET auditoría --- */
+  /* ---------- Obtener registros de sesión ---------- */
   const fetchAuditLogs = async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/auth/audit`, {
         headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
+        cache: 'no-store', // Para evitar caché
       });
       if (res.ok) setLogs(await res.json());
     } catch (err) {
@@ -93,7 +96,7 @@ export default function AuditPage() {
     fetchAuditLogs();
   }, []);
 
-  /* --- DELETE auditoría --- */
+  /* ---------- Eliminar todos los registros ---------- */
   const handleClearLogs = async () => {
     if (
       !window.confirm(
@@ -109,14 +112,13 @@ export default function AuditPage() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) await fetchAuditLogs();
+      if (res.ok) await fetchAuditLogs(); // Refresca los datos
     } catch (err) {
       console.error('Error al borrar auditoría:', err);
     }
     setLoading(false);
   };
 
-  /* ---------- UI ---------- */
   return (
     <ProtectedRoute>
       <main>
@@ -176,9 +178,3 @@ export default function AuditPage() {
     </ProtectedRoute>
   );
 }
-
-
-
-
-
-

@@ -5,29 +5,36 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import { enviarTicketSoporte } from '../services/api';
 
 export default function SoportePage() {
+  // Estados para los campos del formulario
   const [asunto, setAsunto] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [enviado, setEnviado] = useState(false);
   const [error, setError] = useState('');
 
+  // Al enviar el formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Obtenemos el nombre y el correo guardados en localStorage
     const name = localStorage.getItem('username') || '';
     const email = localStorage.getItem('email') || '';
 
+    // Si por alguna razón no están disponibles, se muestra un error
     if (!name || !email) {
       setError('No se pudo obtener el usuario autenticado. Vuelve a iniciar sesión.');
       return;
     }
 
     try {
+      // Llamamos al servicio que envía el ticket al backend
       await enviarTicketSoporte({
         name,
         email,
         subject: asunto,
         message: mensaje,
       });
+
+      // Si todo va bien, se limpian los campos y se muestra mensaje de éxito
       setEnviado(true);
       setAsunto('');
       setMensaje('');
@@ -75,6 +82,7 @@ export default function SoportePage() {
     </ProtectedRoute>
   );
 }
+
 
 
 
