@@ -16,7 +16,6 @@ import {
   Menu,
 } from 'lucide-react';
 
-/* ---------- Helpers: leer payload del token ---------- */
 function getTokenPayload() {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -35,7 +34,6 @@ export default function Navbar() {
   const [role, setRole] = useState<string | null>(null);
   const router = useRouter();
 
-  /* ---- Cargar datos del token al montar ---- */
   useEffect(() => {
     const load = () => {
       const payload = getTokenPayload();
@@ -48,7 +46,6 @@ export default function Navbar() {
     return () => window.removeEventListener('storage', load);
   }, []);
 
-  /* ---- Logout ---- */
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
@@ -59,7 +56,6 @@ export default function Navbar() {
     router.push('/login');
   };
 
-  /* ---- Helper para enlaces ---- */
   const LinkBtn = ({
     href,
     icon: Icon,
@@ -82,14 +78,12 @@ export default function Navbar() {
   return (
     <nav className="bg-blue-700 text-white px-4 py-3 shadow-md">
       <div className="flex items-center justify-between">
-        {/* Logo / título ------------------------------------------------ */}
         <div className="text-lg font-bold">
           <Link href="/">
-             <br />
+            <br />
           </Link>
         </div>
 
-        {/* Botón hamburguesa móvil ------------------------------------ */}
         <button
           className="sm:hidden text-white"
           onClick={() => setIsOpen(!isOpen)}
@@ -97,22 +91,18 @@ export default function Navbar() {
           <Menu className="h-6 w-6" />
         </button>
 
-        {/* ----------- Menú escritorio ----------- */}
         <div className="hidden sm:flex items-center space-x-6">
-          {/* Inicio siempre visible */}
           <LinkBtn href="/" icon={Home} label="Inicio" />
 
           {username && (
             <>
-              {/* Botones visibles a todos los logueados */}
               <LinkBtn href="/soporte" icon={LifeBuoy} label="Soporte" />
               <LinkBtn href="/profile" icon={User} label="Perfil" />
 
-              {/* Botones solo admin */}
               {role === 'admin' && (
                 <>
                   <LinkBtn
-                    href="http://85.208.51.169:8080/index.php"
+                    href="https://victoralvarez.ddns.net/zabbix/"
                     icon={ServerCog}
                     label="Zabbix"
                   />
@@ -128,7 +118,6 @@ export default function Navbar() {
             </>
           )}
 
-          {/* Login / Logout */}
           {username ? (
             <button
               onClick={handleLogout}
@@ -143,7 +132,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ----------- Menú móvil ----------- */}
       {isOpen && (
         <div className="sm:hidden mt-4 space-y-3 bg-blue-600 px-4 py-3 rounded-md">
           <LinkBtn href="/" icon={Home} label="Inicio" />
@@ -156,7 +144,7 @@ export default function Navbar() {
               {role === 'admin' && (
                 <>
                   <LinkBtn
-                    href="http://85.208.51.169:8080/index.php"
+                    href="https://victoralvarez.ddns.net/zabbix/"
                     icon={ServerCog}
                     label="Zabbix"
                   />
@@ -188,6 +176,7 @@ export default function Navbar() {
     </nav>
   );
 }
+
 
 
 
