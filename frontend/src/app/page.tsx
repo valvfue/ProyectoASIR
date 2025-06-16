@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
   }, []);
 
   const handleLoginRedirect = () => {
-    router.push("/login");
+    router.push('/login');
   };
 
   return (
     <main>
-      {/* Cabecera */}
+      {/* Cabecera institucional */}
       <section className="text-center py-12 bg-white shadow">
-        <h1 className="text-4xl font-bold text-blue-800 mb-4">Proyecto ASIR</h1>
+        <h1 className="text-4xl font-bold text-blue-800 mb-4">ElectroniTech S.L.</h1>
         <p className="text-lg text-gray-700">
-          El panel de administración que necesitas para monitorización, backups y soporte
+          Innovación en la fabricación de componentes electrónicos para la industria global
         </p>
         {!isLoggedIn && (
           <button
@@ -35,50 +35,58 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Imagen representativa */}
+      {/* Imagen de fábrica */}
       <section className="mt-8 flex justify-center">
         <Image
-          src="/fabrica.jpg"
-          alt="Centro de operaciones"
+          src="/fabrica-electronica.jpg" // Puedes usar una imagen realista de fábrica moderna
+          alt="Instalaciones ElectroniTech"
           width={800}
           height={400}
-          className="rounded shadow-md"
+          className="rounded shadow-md object-cover"
         />
       </section>
 
-      {/* Aplicaciones principales */}
-      <section className="mt-12 text-center">
-        <h2 className="text-2xl font-semibold mb-6">Herramientas destacadas</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition">
-            <Image src="/zabbix.png" alt="Zabbix" width={80} height={80} className="mx-auto mb-2" />
-            <h3 className="font-bold text-lg">Monitorización avanzada</h3>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition">
-            <Image src="/zendesk.png" alt="Zendesk" width={80} height={80} className="mx-auto mb-2" />
-            <h3 className="font-bold text-lg">Soporte de tickets</h3>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition">
-            <Image src="/login.png" alt="Usuarios" width={80} height={80} className="mx-auto mb-2" />
-            <h3 className="font-bold text-lg">Acceso seguro con el doble factor de autenticación</h3>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition">
-            <Image
-              src="/duplicati.png"
-              alt="Duplicati"
-              width={80}
-              height={80}
-              className="mx-auto mb-2 object-contain w-20 h-20"
-            />
-            <h3 className="font-bold text-lg">Duplicati</h3>
-            <p className="text-sm text-gray-600">Copias de seguridad automáticas</p>
-          </div>
+      {/* Quiénes somos */}
+      <section className="mt-12 px-6 sm:px-16 md:px-32 text-center">
+        <h2 className="text-2xl font-semibold mb-4 text-blue-800">¿Quiénes somos?</h2>
+        <p className="text-gray-700 text-md leading-relaxed">
+          En <strong>ElectroniTech</strong> nos dedicamos a diseñar y fabricar componentes electrónicos de alta precisión
+          para sectores como la automoción, la industria médica y la tecnología aeroespacial.
+          Nuestro compromiso con la calidad y la innovación nos ha convertido en un referente del sector en Europa.
+        </p>
+      </section>
+
+      {/* Qué hacemos */}
+      <section className="mt-12 px-6 sm:px-16 md:px-32 text-center">
+        <h2 className="text-2xl font-semibold mb-4 text-blue-800">¿Qué hacemos?</h2>
+        <p className="text-gray-700 text-md leading-relaxed mb-8">
+          Contamos con líneas de producción automatizadas, laboratorios de control de calidad y un equipo humano altamente cualificado.
+          Desarrollamos microcontroladores, placas base personalizadas, sensores inteligentes y otros componentes críticos
+          para nuestros clientes en más de 20 países.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Image src="/produccion1.jpg" alt="Producción en cadena" width={400} height={250} className="rounded shadow" />
+          <Image src="/laboratorio.jpg" alt="Laboratorio de pruebas" width={400} height={250} className="rounded shadow" />
+          <Image src="/ingenieria.jpg" alt="Equipo de ingeniería" width={400} height={250} className="rounded shadow" />
         </div>
+      </section>
+
+      {/* Valores */}
+      <section className="mt-16 px-6 sm:px-16 md:px-32 text-center mb-16">
+        <h2 className="text-2xl font-semibold mb-4 text-blue-800">Nuestros valores</h2>
+        <ul className="text-gray-700 text-md space-y-2">
+          <li>✅ Innovación constante</li>
+          <li>✅ Compromiso con la sostenibilidad</li>
+          <li>✅ Calidad certificada ISO 9001</li>
+          <li>✅ Seguridad y bienestar laboral</li>
+        </ul>
       </section>
     </main>
   );
 }
+
+
+
 
 
 

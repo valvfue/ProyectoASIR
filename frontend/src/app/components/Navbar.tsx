@@ -11,10 +11,12 @@ import {
   LifeBuoy,
   ShieldAlert,
   ServerCog,
+  Server,
   Users,
   Menu,
 } from 'lucide-react';
 
+/* ---------- Helpers: leer payload del token ---------- */
 function getTokenPayload() {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -33,7 +35,7 @@ export default function Navbar() {
   const [role, setRole] = useState<string | null>(null);
   const router = useRouter();
 
-  /* ---- Cargar datos de token ---- */
+  /* ---- Cargar datos del token al montar ---- */
   useEffect(() => {
     const load = () => {
       const payload = getTokenPayload();
@@ -57,7 +59,7 @@ export default function Navbar() {
     router.push('/login');
   };
 
-  /* ---- Helpers UI ---- */
+  /* ---- Helper para enlaces ---- */
   const LinkBtn = ({
     href,
     icon: Icon,
@@ -83,7 +85,7 @@ export default function Navbar() {
         {/* Logo / título ------------------------------------------------ */}
         <div className="text-lg font-bold">
           <Link href="/">
-            Proyecto <br /> ASIR
+             <br />
           </Link>
         </div>
 
@@ -97,7 +99,8 @@ export default function Navbar() {
 
         {/* ----------- Menú escritorio ----------- */}
         <div className="hidden sm:flex items-center space-x-6">
-          {!username && <LinkBtn href="/" icon={Home} label="Inicio" />}
+          {/* Inicio siempre visible */}
+          <LinkBtn href="/" icon={Home} label="Inicio" />
 
           {username && (
             <>
@@ -114,15 +117,12 @@ export default function Navbar() {
                     label="Zabbix"
                   />
                   <LinkBtn
-                    href="/audit"
-                    icon={ShieldAlert}
-                    label="Auditoría"
+                    href="http://85.208.51.169:8200"
+                    icon={Server}
+                    label="Duplicati"
                   />
-                  <LinkBtn
-                    href="/usuarios"
-                    icon={Users}
-                    label="Usuarios"
-                  />
+                  <LinkBtn href="/audit" icon={ShieldAlert} label="Auditoría" />
+                  <LinkBtn href="/usuarios" icon={Users} label="Usuarios" />
                 </>
               )}
             </>
@@ -146,7 +146,7 @@ export default function Navbar() {
       {/* ----------- Menú móvil ----------- */}
       {isOpen && (
         <div className="sm:hidden mt-4 space-y-3 bg-blue-600 px-4 py-3 rounded-md">
-          {!username && <LinkBtn href="/" icon={Home} label="Inicio" />}
+          <LinkBtn href="/" icon={Home} label="Inicio" />
 
           {username && (
             <>
@@ -161,15 +161,12 @@ export default function Navbar() {
                     label="Zabbix"
                   />
                   <LinkBtn
-                    href="/audit"
-                    icon={ShieldAlert}
-                    label="Auditoría"
+                    href="http://85.208.51.169:8200"
+                    icon={Server}
+                    label="Duplicati"
                   />
-                  <LinkBtn
-                    href="/usuarios"
-                    icon={Users}
-                    label="Usuarios"
-                  />
+                  <LinkBtn href="/audit" icon={ShieldAlert} label="Auditoría" />
+                  <LinkBtn href="/usuarios" icon={Users} label="Usuarios" />
                 </>
               )}
             </>
@@ -191,6 +188,8 @@ export default function Navbar() {
     </nav>
   );
 }
+
+
 
 
 
