@@ -19,9 +19,8 @@ export default function HomePage() {
 
   return (
     <main>
-      {/* Cabecera institucional */}
       <section className="text-center py-12 bg-white shadow">
-        <h1 className="text-4xl font-bold text-blue-800 mb-4">ElectroniTech S.L.</h1>
+        <h1 className="text-4xl font-bold text-blue-800 mb-4">VictorAlvarez S.L.</h1>
         <p className="text-lg text-gray-700">
           Innovación en la fabricación de componentes electrónicos para la industria global
         </p>
@@ -35,28 +34,25 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Imagen de fábrica */}
       <section className="mt-8 flex justify-center">
         <Image
-          src="/fabrica-electronica.jpg" // Puedes usar una imagen realista de fábrica moderna
-          alt="Instalaciones ElectroniTech"
+          src="/fabrica-electronica.jpg"
+          alt="Instalaciones VictorAlvarez"
           width={800}
           height={400}
           className="rounded shadow-md object-cover"
         />
       </section>
 
-      {/* Quiénes somos */}
       <section className="mt-12 px-6 sm:px-16 md:px-32 text-center">
         <h2 className="text-2xl font-semibold mb-4 text-blue-800">¿Quiénes somos?</h2>
         <p className="text-gray-700 text-md leading-relaxed">
-          En <strong>ElectroniTech</strong> nos dedicamos a diseñar y fabricar componentes electrónicos de alta precisión
+          En <strong>VictorAlvarez</strong> nos dedicamos a diseñar y fabricar componentes electrónicos de alta precisión
           para sectores como la automoción, la industria médica y la tecnología aeroespacial.
           Nuestro compromiso con la calidad y la innovación nos ha convertido en un referente del sector en Europa.
         </p>
       </section>
 
-      {/* Qué hacemos */}
       <section className="mt-12 px-6 sm:px-16 md:px-32 text-center">
         <h2 className="text-2xl font-semibold mb-4 text-blue-800">¿Qué hacemos?</h2>
         <p className="text-gray-700 text-md leading-relaxed mb-8">
@@ -71,7 +67,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Valores */}
       <section className="mt-16 px-6 sm:px-16 md:px-32 text-center mb-16">
         <h2 className="text-2xl font-semibold mb-4 text-blue-800">Nuestros valores</h2>
         <ul className="text-gray-700 text-md space-y-2">
